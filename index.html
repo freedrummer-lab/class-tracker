@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#eceae4">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="課堂記錄">
+<link rel="manifest" href="#" id="manifest-link">
+<title>課堂記錄</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:        #f5f3ef;
+  --bg2:       #eceae4;
+  --surface:   #ffffff;
+  --surface2:  #f9f8f5;
+  --surface3:  #f0ede7;
+  --border:    #dedad3;
+  --border2:   #ccc8bf;
+  --text:      #2c2925;
+  --text2:     #6b6560;
+  --text3:     #9e9890;
+  --gold:      #8b6f47;
+  --gold-lt:   #8b6f4715;
+  --gold-dk:   #6e5535;
+  --teal:      #4a8c82;
+  --teal-lt:   #4a8c8215;
+  --teal-dk:   #35706a;
+  --rose:      #b85c6e;
+  --rose-lt:   #b85c6e12;
+  --green:     #4a8c6a;
+  --green-lt:  #4a8c6a14;
+  --amber:     #a07840;
+  --amber-lt:  #a0784014;
+  --shadow:    0 2px 12px rgba(44,41,37,.08);
+  --shadow-lg: 0 8px 32px rgba(44,41,37,.14);
+  --radius:    10px;
+}
+
+html{height:100%;overflow:hidden;}
+body{height:100%;overflow:hidden;font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;
+  background:var(--bg2);border-bottom:1px solid var(--border);z-index:50;flex-shrink:0;}
+.logo{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
+.header-tools{display:flex;gap:5px;margin-left:12px;}
+.hdr-tool-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s;}
+.hdr-tool-btn:hover{border-color:var(--gold);color:var(--gold);}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+nav{display:flex;gap:4px;}
+.nav-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500;transition:all .18s;}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold);}
+.nav-btn.active{border-color:var(--gold);background:var(--gold);color:#fff;font-weight:700;}
+
+/* ── VIEWS ── */
+#view-week,#view-stats,#view-students{display:none;}
+#view-stats.visible,#view-students.visible{display:block;overflow-y:auto;flex:1;}
+#view-week.visible{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+
+/* ── student page ── */
+#view-students{padding:16px;overflow-y:auto;}
+.stu-page-header{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.stu-sel-wrap{flex:1;min-width:160px;}
+.stu-sel{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid var(--border2);
+  background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;font-weight:600;}
+.stu-sel:focus{outline:none;border-color:var(--gold);}
+.stu-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
+.stu-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;text-align:center;}
+.stu-stat-val{font-size:22px;font-weight:700;color:var(--text);}
+.stu-stat-lbl{font-size:11px;color:var(--text3);margin-top:2px;}
+.stu-attend-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin-bottom:18px;}
+.stu-attend-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.4px;margin-bottom:8px;}
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-month-sep{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.3px;
+  padding:10px 0 4px 36px;display:flex;align-items:center;gap:8px;}
+.tl-month-sep::after{content:'';flex:1;height:1px;background:var(--border);}
+.tl-month-sep-year{color:var(--gold-dk);font-weight:700;}
+.tl-item{display:flex;gap:0;align-items:flex-start;position:relative;}
+.tl-line-col{display:flex;flex-direction:column;align-items:center;width:36px;flex-shrink:0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid var(--surface);
+  flex-shrink:0;margin-top:14px;z-index:1;}
+.tl-dot.has-note{background:var(--gold);}
+.tl-connector{width:2px;background:var(--border);flex:1;min-height:10px;}
+.tl-item:last-child .tl-connector{display:none;}
+.tl-body{flex:1;padding:8px 0 8px 4px;}
+.tl-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;}
+.tl-num{font-size:11px;color:var(--text3);min-width:36px;}
+.tl-date{font-size:13px;font-weight:700;color:var(--text);}
+.tl-dur{font-size:11px;color:var(--text2);}
+.tl-paid{font-size:11px;padding:2px 8px;border-radius:20px;}
+.tl-paid.paid{color:var(--green);background:var(--green-lt);border:1px solid var(--green);}
+.tl-paid.unpaid{color:var(--text3);background:var(--surface2);border:1px solid var(--border2);}
+.tl-note{font-size:12px;color:var(--text2);background:var(--surface2);border-left:3px solid var(--gold);
+  padding:5px 10px;border-radius:0 6px 6px 0;margin-top:4px;line-height:1.5;cursor:pointer;transition:background .15s;}
+.tl-note:hover{background:var(--surface3);}
+.tl-note-edit{display:none;margin-top:4px;}
+.tl-note-edit.visible{display:flex;flex-direction:column;gap:4px;}
+.tl-note-textarea{width:100%;padding:6px 9px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;resize:none;line-height:1.5;}
+.tl-note-textarea:focus{outline:none;border-color:var(--gold);}
+.tl-note-add{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 0;display:inline-block;}
+.tl-note-add:hover{color:var(--gold);}
+.tl-note-save{padding:4px 12px;border-radius:6px;border:none;background:var(--gold);color:#fff;
+  font-size:11px;font-family:inherit;cursor:pointer;font-weight:600;}
+.tl-note-cancel{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);font-size:11px;font-family:inherit;cursor:pointer;}
+.tl-note-btns{display:flex;gap:6px;}
+.stu-empty{text-align:center;padding:40px;color:var(--text3);}
+
+/* ── WEEK CONTROLS ── */
+.week-controls{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;}
+.week-ctrl-sep{width:1px;height:18px;background:var(--border2);margin:0 2px;}
+.week-nav-group{display:flex;align-items:center;gap:8px;}
+.week-nav-btn{padding:4px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);
+  color:var(--text2);cursor:pointer;font-family:inherit;font-size:12px;transition:all .15s;white-space:nowrap;}
+.week-nav-btn:hover{border-color:var(--gold);color:var(--gold);}
+.week-label{font-size:13px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;}
+.month-jump-group{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.ctrl-lbl{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0;}
+.ctrl-sel{padding:4px 6px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);
+  color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;transition:border-color .15s;}
+.ctrl-sel:focus{outline:none;border-color:var(--gold);}
+.today-btn{padding:4px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);
+  color:var(--text2);cursor:pointer;font-family:inherit;font-size:12px;transition:all .15s;white-space:nowrap;}
+.today-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ── TIMETABLE ── */
+.timetable-wrap{flex:1;overflow:auto;padding:0;min-height:0;}
+.timetable{display:flex;min-width:460px;align-items:flex-start;}
+.time-axis{min-width:38px;flex-shrink:0;padding-top:49px;position:sticky;left:0;z-index:3;background:var(--bg);}
+.time-label-row{height:60px;display:flex;align-items:flex-start;padding-top:3px;}
+.time-label{font-size:10px;color:var(--text3);font-weight:500;}
+
+.day-col{flex:1;min-width:72px;border-left:1px solid var(--border);}
+.day-header{height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:2;}
+.day-header.today{background:linear-gradient(135deg,var(--gold-dk),var(--gold));}
+.day-header .dname{font-size:10px;font-weight:500;color:var(--text3);}
+.day-header.today .dname{color:rgba(255,255,255,.75);}
+.day-header .ddate{font-size:15px;font-weight:700;color:var(--text);}
+.day-header.today .ddate{color:#fff;}
+
+.day-grid{position:relative;background:var(--surface);}
+.hour-line{position:absolute;left:0;right:0;border-top:1px solid var(--border);pointer-events:none;}
+.hour-line.half-line{border-top:1px dashed var(--border);opacity:.4;}
+
+/* class blocks */
+.class-block{position:absolute;border-radius:7px;padding:4px 6px;cursor:pointer;
+  overflow:hidden;transition:filter .15s,box-shadow .15s;}
+.class-block:hover{filter:brightness(1.12);box-shadow:0 4px 14px rgba(0,0,0,.35);}
+.class-block .cb-name{font-size:11px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.class-block .cb-meta{font-size:9px;opacity:.75;margin-top:1px;}
+/* fixed = teal, temp = gold */
+.class-block.type-fixed        {background:var(--teal-lt);border-left:3px solid var(--teal);color:var(--teal);}
+.class-block.type-fixed.logged {background:var(--teal);border-left:3px solid var(--teal-dk);color:#fff;}
+.class-block.type-temp         {background:var(--gold-lt);border-left:3px solid var(--gold);color:var(--gold);}
+.class-block.type-temp.logged  {background:var(--gold);border-left:3px solid var(--gold-dk);color:#fff;}
+/* biweek stripe */
+.class-block.biweek-off{opacity:.35;pointer-events:none;}
+
+.now-line{position:absolute;left:0;right:0;height:2px;background:#e05555;z-index:2;pointer-events:none;}
+.now-line::before{content:'';position:absolute;left:-4px;top:-4px;width:10px;height:10px;
+  border-radius:50%;background:#e05555;}
+.add-btn{position:absolute;bottom:8px;right:8px;width:26px;height:26px;border-radius:50%;
+  border:1px dashed var(--border2);background:transparent;color:var(--text3);
+  cursor:pointer;font-size:17px;line-height:24px;text-align:center;transition:all .15s;}
+.add-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:10px;padding:4px 12px;font-size:10px;color:var(--text3);align-items:center;flex-wrap:nowrap;flex-shrink:0;border-bottom:1px solid var(--border);overflow-x:auto;}
+.legend-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:3px;flex-shrink:0;}
+
+/* ── STATS ── */
+#view-stats{padding:16px;overflow-y:auto;}
+.stats-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+.stats-controls{display:flex;gap:8px;flex:1;flex-wrap:wrap;}
+input[type=month],select.sel{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;}
+.copy-btn{padding:8px 18px;border-radius:8px;border:none;background:var(--gold);color:#fff;
+  cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.copy-btn:hover{background:var(--gold-dk);}
+.copy-btn.copied{background:var(--green);color:#fff;}
+
+.mgmt-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:14px;}
+.mgmt-panel-title{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.5px;margin-bottom:10px;}
+.pay-toggles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;}
+.pay-toggle-lbl{font-size:12px;color:var(--text3);align-self:center;margin-right:4px;}
+.ptag{display:inline-flex;align-items:center;gap:0;border-radius:20px;overflow:hidden;
+  border:1px solid var(--border2);background:var(--surface2);}
+.ptag-name{padding:4px 10px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .18s;font-family:inherit;
+  background:transparent;border:none;font-weight:500;}
+.ptag-name:hover{color:var(--gold);}
+.ptag-name.on{background:var(--gold-lt);color:var(--gold);font-weight:700;}
+.ptag-del{padding:4px 8px;font-size:11px;color:var(--text3);cursor:pointer;
+  border:none;border-left:1px solid var(--border2);background:transparent;transition:all .18s;font-family:inherit;}
+.ptag-del:hover{color:var(--rose);background:var(--rose-lt);}
+.student-del-panel{display:none;background:var(--surface2);border:1px solid var(--rose);border-radius:8px;
+  padding:10px 12px;margin:6px 0 2px;width:100%;}
+.student-del-panel.visible{display:block;}
+.student-del-panel p{font-size:12px;color:var(--rose);margin-bottom:8px;font-weight:500;}
+.sdp-btns{display:flex;gap:8px;}
+.sdp-yes{flex:1;padding:6px;border-radius:6px;border:none;background:var(--rose);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;font-weight:700;}
+.sdp-no {flex:1;padding:6px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:inherit;}
+
+/* batch pay */
+.batch-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.batch-lbl{font-size:12px;color:var(--text3);}
+.batch-sel{padding:4px 8px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text);font-size:12px;font-family:inherit;}
+.batch-btn{padding:5px 12px;border-radius:7px;border:none;background:var(--teal);color:#fff;
+  cursor:pointer;font-size:12px;font-family:inherit;font-weight:700;transition:all .15s;}
+.batch-btn:hover{background:var(--teal-dk);}
+
+.stats-card{background:var(--surface);border-radius:12px;padding:16px;margin-bottom:14px;
+  border:1px solid var(--border);box-shadow:var(--shadow);}
+.stats-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.student-badge{padding:3px 12px;border-radius:20px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));
+  color:#fff;font-size:13px;font-weight:700;}
+.stats-total{font-size:14px;color:var(--text2);}
+.pay-summary{font-size:12px;color:var(--text3);}
+
+.record-list{display:flex;flex-direction:column;gap:5px;}
+.record-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--surface2);
+  border-radius:8px;border:1px solid var(--border);}
+.rec-num {font-size:11px;color:var(--text3);min-width:36px;}
+.rec-date{font-size:13px;font-weight:700;color:var(--text);min-width:42px;}
+.rec-dur {font-size:11px;color:var(--text2);flex:1;}
+.paid-btn{padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;
+  color:var(--text3);cursor:pointer;font-size:11px;font-family:inherit;transition:all .18s;white-space:nowrap;}
+.paid-btn.paid{border-color:var(--green);color:var(--green);background:var(--green-lt);}
+.empty{text-align:center;padding:40px;color:var(--text3);}
+.attend-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.attend-bar-bg{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.attend-bar-fill{height:100%;border-radius:3px;transition:width .4s;}
+.attend-pct{font-size:12px;font-weight:700;min-width:36px;text-align:right;}
+.attend-label{font-size:11px;color:var(--text3);}
+.rec-note{font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;padding-left:2px;}
+.note-input{width:100%;padding:7px 10px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  margin-top:6px;resize:none;transition:border-color .15s;}
+.note-input:focus{outline:none;border-color:var(--gold);}
+.note-row{margin-top:6px;}
+.note-row-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.3px;display:block;}
+.attend-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.attend-bar-bg{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.attend-bar-fill{height:100%;border-radius:3px;transition:width .4s;}
+.attend-pct{font-size:12px;font-weight:700;min-width:36px;text-align:right;}
+.attend-label{font-size:11px;color:var(--text3);}
+.rec-note{font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;padding-left:2px;}
+.note-input{width:100%;padding:7px 10px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  margin-top:8px;resize:none;transition:border-color .15s;}
+.note-input:focus{outline:none;border-color:var(--gold);}
+.note-row{margin-top:4px;}
+.note-row-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.3px;margin-bottom:4px;display:block;}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);
+  align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:min(92vw,400px);
+  box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;border:1px solid var(--border2);}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--text);}
+.form-label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;margin-top:13px;
+  font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
+.form-input{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:4px;transition:border-color .15s;}
+.form-input:focus{outline:none;border-color:var(--gold);}
+.radio-group{display:flex;gap:7px;flex-wrap:wrap;}
+.radio-label{flex:1;min-width:80px;display:flex;align-items:center;padding:8px 10px;border-radius:8px;
+  border:1px solid var(--border2);cursor:pointer;font-size:12px;transition:all .18s;color:var(--text2);}
+.radio-label input{margin-right:5px;}
+.radio-label.selected{border-color:var(--gold);background:var(--gold-lt);color:var(--gold);font-weight:600;}
+.time-row{display:flex;gap:8px;}
+.time-row select{flex:1;}
+.btn-row{display:flex;gap:10px;margin-top:16px;}
+.btn-submit{flex:1;padding:10px;border-radius:9px;border:none;background:var(--gold);color:#fff;
+  cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;transition:all .15s;}
+.btn-submit:hover{background:var(--gold-dk);}
+.btn-cancel{flex:1;padding:10px;border-radius:9px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:14px;font-family:inherit;}
+.btn-danger{width:100%;padding:10px;border-radius:9px;border:1px solid var(--rose);background:transparent;
+  color:var(--rose);cursor:pointer;font-size:14px;font-family:inherit;margin-top:8px;transition:all .15s;}
+.btn-danger:hover{background:var(--rose-lt);}
+.btn-full{width:100%;padding:10px;border-radius:9px;border:none;color:#fff;cursor:pointer;
+  font-weight:700;font-size:14px;font-family:inherit;margin-top:12px;transition:filter .15s;}
+.btn-full:hover{filter:brightness(.9);}
+.btn-close{width:100%;padding:10px;border-radius:9px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:14px;font-family:inherit;margin-top:8px;}
+.class-info-row{display:flex;gap:7px;flex-wrap:wrap;font-size:12px;color:var(--text2);margin-bottom:8px;}
+.class-info-row span{background:var(--surface2);padding:3px 9px;border-radius:20px;border:1px solid var(--border);}
+.del-panel{display:none;background:var(--surface2);border:1px solid var(--rose);border-radius:9px;
+  padding:12px 14px;margin-top:8px;}
+.del-panel.visible{display:block;}
+.del-panel-title{font-size:11px;color:var(--rose);font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;margin-bottom:10px;}
+.del-options{display:flex;flex-direction:column;gap:6px;}
+.del-opt{display:flex;flex-direction:column;padding:10px 12px;border-radius:8px;
+  border:1px solid var(--border2);background:var(--surface2);cursor:pointer;
+  transition:all .15s;text-align:left;font-family:inherit;width:100%;}
+.del-opt:hover{border-color:var(--rose);background:var(--rose-lt);}
+.del-opt-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.del-opt-desc{font-size:11px;color:var(--text3);}
+.del-opt:hover .del-opt-label{color:var(--rose);}
+.del-opt:hover .del-opt-desc{color:var(--rose);}
+.btn-confirm-no{padding:8px;border-radius:8px;border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+/* PWA install banner */
+.install-banner{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1px solid var(--border2);border-radius:14px;
+  padding:12px 18px;box-shadow:var(--shadow-lg);z-index:200;
+  align-items:center;gap:12px;max-width:calc(100vw - 32px);}
+.install-banner.show{display:flex;}
+.install-banner-text{font-size:13px;color:var(--text);font-weight:500;}
+.install-banner-text span{font-size:11px;color:var(--text3);display:block;margin-top:2px;}
+.install-btn{padding:7px 16px;border-radius:8px;border:none;background:var(--gold);
+  color:#fff;cursor:pointer;font-size:13px;font-family:inherit;font-weight:700;white-space:nowrap;}
+.install-dismiss{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);
+  background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-dot"></span>課堂記錄</div>
+  <div class="header-tools">
+    <button class="hdr-tool-btn" onclick="exportJSON()">匯出</button>
+    <button class="hdr-tool-btn" onclick="document.getElementById('import-input').click()">匯入</button>
+    <input type="file" id="import-input" accept=".json" style="display:none;" onchange="importJSON(event)">
+  </div>
+  <nav>
+    <button class="nav-btn active" id="btn-week" onclick="switchView('week')">週課表</button>
+    <button class="nav-btn" id="btn-stats" onclick="switchView('stats')">統計</button>
+    <button class="nav-btn" id="btn-students" onclick="switchView('students')">學生</button>
+  </nav>
+</header>
+
+<!-- WEEK VIEW -->
+<div id="view-week" class="visible">
+  <div class="week-controls">
+    <button class="week-nav-btn" onclick="changeWeek(-7)">‹ 上週</button>
+    <span class="week-label" id="week-label"></span>
+    <button class="week-nav-btn" onclick="changeWeek(7)">下週 ›</button>
+    <div class="week-ctrl-sep"></div>
+    <span class="ctrl-lbl">月份</span>
+    <select class="ctrl-sel" id="month-jump" onchange="jumpToMonth()"></select>
+    <button class="today-btn" onclick="goToday()">本週</button>
+  </div>
+  <div class="legend" id="week-legend">
+    <span><span class="legend-dot" style="background:var(--teal);"></span>固定課·計入</span>
+    <span><span class="legend-dot" style="background:var(--teal-lt);border:1px solid var(--teal);"></span>固定課·未計入</span>
+    <span><span class="legend-dot" style="background:var(--gold);"></span>臨時課·計入</span>
+    <span><span class="legend-dot" style="background:var(--gold-lt);border:1px solid var(--gold);"></span>臨時課·未計入</span>
+  </div>
+  <div class="timetable-wrap">
+    <div class="timetable" id="timetable"></div>
+  </div>
+</div>
+
+<!-- STATS VIEW -->
+<div id="view-stats">
+  <div class="stats-toolbar">
+    <div class="stats-controls">
+      <input type="month" id="stats-month" oninput="renderStats()">
+      <select class="sel" id="stats-student" onchange="renderStats()">
+        <option value="all">全部學生</option>
+      </select>
+    </div>
+    <button class="copy-btn" id="copy-btn" onclick="copyStats()">📋 一鍵複製</button>
+  </div>
+  <div class="mgmt-panel" id="mgmt-panel">
+    <div class="mgmt-panel-title">學生管理</div>
+    <div class="pay-toggles" id="pay-toggles"></div>
+    <div class="batch-row">
+      <span class="batch-lbl">批次標記</span>
+      <select class="batch-sel" id="batch-student-sel"></select>
+      <select class="batch-sel" id="batch-count-sel">
+        <option value="4">4 堂</option>
+        <option value="8">8 堂</option>
+        <option value="12">12 堂</option>
+      </select>
+      <button class="batch-btn" onclick="batchPay()">✓ 標記已繳費</button>
+    </div>
+  </div>
+  <div id="stats-cards"></div>
+</div>
+
+<!-- STUDENT VIEW -->
+<div id="view-students">
+  <div class="stu-page-header">
+    <div class="stu-sel-wrap">
+      <select class="stu-sel" id="stu-sel" onchange="renderStudentPage()">
+        <option value="">— 選擇學生 —</option>
+      </select>
+    </div>
+  </div>
+  <div id="stu-content"></div>
+</div>
+
+<!-- ADD/EDIT CLASS MODAL -->
+<div class="overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-title" id="modal-add-title">新增課堂</div>
+    <label class="form-label">學生</label>
+    <select class="form-input" id="f-student-sel" onchange="onStudentSelChange()">
+      <option value="">— 選擇已有學生 —</option>
+    </select>
+    <input class="form-input" id="f-student-new" placeholder="或輸入新學生姓名" oninput="onStudentInputChange()">
+    <label class="form-label">課堂類型</label>
+    <div class="radio-group">
+      <label class="radio-label selected" id="rl-fixed" onclick="setType('fixed')">
+        <input type="radio" name="rtype" value="fixed" checked> 🔁 固定課
+      </label>
+      <label class="radio-label" id="rl-temp" onclick="setType('temporary')">
+        <input type="radio" name="rtype" value="temporary"> 📅 臨時課
+      </label>
+    </div>
+    <div id="freq-row">
+      <label class="form-label">上課頻率</label>
+      <div class="radio-group">
+        <label class="radio-label selected" id="rl-weekly" onclick="setFreq('weekly')">
+          <input type="radio" name="rfreq" value="weekly" checked> 每週
+        </label>
+        <label class="radio-label" id="rl-biweekly" onclick="setFreq('biweekly')">
+          <input type="radio" name="rfreq" value="biweekly"> 隔週
+        </label>
+      </div>
+    </div>
+    <label class="form-label">課時長度</label>
+    <div class="radio-group">
+      <label class="radio-label" id="rl-25" onclick="setDuration(25)"><input type="radio" name="rdur" value="25"> 25 分</label>
+      <label class="radio-label selected" id="rl-50" onclick="setDuration(50)"><input type="radio" name="rdur" value="50" checked> 50 分</label>
+      <label class="radio-label" id="rl-60" onclick="setDuration(60)"><input type="radio" name="rdur" value="60"> 60 分</label>
+    </div>
+    <label class="form-label">開始時間</label>
+    <div class="time-row">
+      <select class="form-input" id="f-hour"></select>
+      <select class="form-input" id="f-min">
+        <option value="0">:00</option><option value="10">:10</option>
+        <option value="20">:20</option><option value="30">:30</option>
+        <option value="40">:40</option><option value="50">:50</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('modal-add')">取消</button>
+      <button class="btn-submit" id="modal-add-submit" onclick="submitClass()">新增課堂</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG / DETAIL MODAL -->
+<div class="overlay" id="modal-log">
+  <div class="modal" id="modal-log-inner">
+    <div class="modal-title" id="log-title"></div>
+    <div class="class-info-row" id="log-info"></div>
+    <button class="btn-full" id="log-action-btn"></button>
+    <div class="note-row" id="note-row" style="display:none;">
+      <span class="note-row-label">進度／備註</span>
+      <textarea class="note-input" id="note-input" rows="2" placeholder="選填：學習進度、請假原因、補課說明…"></textarea>
+      <button class="btn-cancel" id="note-save-btn" style="width:100%;margin-top:6px;font-size:13px;">儲存</button>
+    </div>
+    <div class="divider"></div>
+    <button class="btn-cancel" id="log-edit-btn" style="width:100%;margin-top:0;">✏️ 修改課堂資訊</button>
+    <button class="btn-danger" id="log-delete-btn">🗑 刪除課堂…</button>
+    <div class="del-panel" id="del-panel">
+      <div class="del-panel-title" id="del-panel-title">選擇刪除範圍</div>
+      <div class="del-options" id="del-options">
+        <!-- filled by JS depending on fixed/temp -->
+      </div>
+      <button class="btn-confirm-no" id="confirm-no-btn" style="width:100%;margin-top:8px;">取消</button>
+    </div>
+    <button class="btn-close" id="log-close-btn">關閉</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+var DAYS  = ['週一','週二','週三','週四','週五','週六','週日'];
+var HOURS = Array.from({length:17},function(_,i){return i+8;}); // 8~24, where 24=00:00 midnight
+var SLOT_H = 60;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+function save(){try{localStorage.setItem('ct_v2',JSON.stringify(state));}catch(e){}}
+function load(){try{var d=localStorage.getItem('ct_v2');return d?JSON.parse(d):null;}catch(e){return null;}}
+
+var state = load() || {students:[],classes:[],records:[]};
+
+// migrate old data: add freq field if missing
+state.classes.forEach(function(c){if(!c.freq)c.freq='weekly';});
+
+var weekStart     = isoWeekStart(new Date());
+var modalDayIndex = 0;
+var logTarget     = null;
+var editingClsId  = null; // null = adding new, string = editing existing
+var formType      = 'fixed';
+var formFreq      = 'weekly';
+var formDuration  = 50;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function isoWeekStart(date){
+  var d=new Date(date),day=d.getDay();
+  d.setDate(d.getDate()+(day===0?-6:1-day));
+  d.setHours(0,0,0,0);return d;
+}
+function addDays(date,n){var d=new Date(date);d.setDate(d.getDate()+n);return d;}
+function dateKey(date){return date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function fmtDate(date){return (date.getMonth()+1)+'/'+date.getDate();}
+function weekDays(){return Array.from({length:7},function(_,i){return addDays(weekStart,i);});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ISO week number (for biweekly parity)
+function isoWeekNum(date){
+  var d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  var dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  var yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+// Reference week for biweekly: week the class was created
+function isActiveThisWeek(cls, date){
+  if(cls.type!=='fixed') return true;
+  if(cls.freq==='weekly') return true;
+  // biweekly: active if same parity as creation week
+  var refWeek = cls.refWeek || 0;
+  var thisWeek = isoWeekNum(date);
+  return (thisWeek % 2) === (refWeek % 2);
+}
+
+// ── VIEW SWITCH ───────────────────────────────────────────────────────────────
+function switchView(v){
+  document.getElementById('view-week').classList.toggle('visible',v==='week');
+  document.getElementById('view-stats').classList.toggle('visible',v==='stats');
+  document.getElementById('view-students').classList.toggle('visible',v==='students');
+  document.getElementById('btn-week').classList.toggle('active',v==='week');
+  document.getElementById('btn-stats').classList.toggle('active',v==='stats');
+  document.getElementById('btn-students').classList.toggle('active',v==='students');
+  if(v==='stats'){
+    var now=new Date();
+    document.getElementById('stats-month').value=now.getFullYear()+'-'+pad(now.getMonth()+1);
+    renderStats();
+  }
+  if(v==='students') initStudentPage();
+}
+
+// ── MONTH JUMP ────────────────────────────────────────────────────────────────
+function buildMonthJump(){
+  var sel=document.getElementById('month-jump'),cur=sel.value;
+  sel.innerHTML='';
+  var now=new Date();
+  for(var i=-12;i<=12;i++){
+    var d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    var key=d.getFullYear()+'-'+pad(d.getMonth()+1);
+    var o=document.createElement('option');
+    o.value=key;o.textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月';
+    sel.appendChild(o);
+  }
+  var wsKey=weekStart.getFullYear()+'-'+pad(weekStart.getMonth()+1);
+  sel.value=wsKey;
+}
+function jumpToMonth(){
+  var val=document.getElementById('month-jump').value;if(!val)return;
+  var p=val.split('-');
+  weekStart=isoWeekStart(new Date(parseInt(p[0]),parseInt(p[1])-1,1));
+  renderWeek();
+}
+function goToday(){weekStart=isoWeekStart(new Date());renderWeek();}
+function changeWeek(n){weekStart=addDays(weekStart,n);renderWeek();}
+
+// ── RENDER WEEK ───────────────────────────────────────────────────────────────
+function renderWeek(){
+  var days=weekDays(),todayKey=dateKey(new Date());
+  document.getElementById('week-label').textContent=fmtDate(days[0])+' – '+fmtDate(days[6])+' '+days[0].getFullYear();
+  buildMonthJump();
+
+  var tt=document.getElementById('timetable');tt.innerHTML='';
+
+  // time axis — hours 8..23 + 24(=00:00 midnight)
+  var axis=document.createElement('div');axis.className='time-axis';
+  HOURS.forEach(function(h){
+    var r=document.createElement('div');r.className='time-label-row';
+    var label = h===24 ? '00:00' : pad(h)+':00';
+    r.innerHTML='<span class="time-label">'+label+'</span>';
+    axis.appendChild(r);
+  });
+  tt.appendChild(axis);
+
+  days.forEach(function(date,di){
+    var col=document.createElement('div');col.className='day-col';
+    var hdr=document.createElement('div');
+    hdr.className='day-header'+(dateKey(date)===todayKey?' today':'');
+    hdr.innerHTML='<div class="dname">'+DAYS[di]+'</div><div class="ddate">'+fmtDate(date)+'</div>';
+    col.appendChild(hdr);
+
+    var grid=document.createElement('div');grid.className='day-grid';
+    grid.style.height=(HOURS.length*SLOT_H)+'px';
+    HOURS.forEach(function(h,hi){
+      var line=document.createElement('div');line.className='hour-line';
+      line.style.top=(hi*SLOT_H)+'px';grid.appendChild(line);
+    });
+
+    var dKey=dateKey(date);
+    var dayClasses=state.classes.filter(function(c){
+      // cutoff: hide this date and beyond
+      if(c.cutoffDate && dKey>=c.cutoffDate) return false;
+      // excludeDates: skip specific dates
+      if(c.excludeDates && c.excludeDates.indexOf(dKey)!==-1) return false;
+      if(c.type==='fixed') return c.dayIndex===di;
+      return dateKey(new Date(c.date))===dateKey(date);
+    });
+
+    // ── collision layout: compute columns for overlapping blocks ──
+    var layoutItems = dayClasses.map(function(cls){
+      var startH = cls.startHour >= 8 ? cls.startHour : cls.startHour + 24;
+      var top    = (startH-8)*SLOT_H + (cls.startMin/60)*SLOT_H;
+      var height = (cls.duration/60)*SLOT_H;
+      return {cls:cls, top:top, bottom:top+height, col:0, totalCols:1};
+    });
+
+    // assign columns: greedy interval graph coloring
+    layoutItems.forEach(function(item, i){
+      var usedCols = [];
+      for(var j=0;j<i;j++){
+        var other=layoutItems[j];
+        if(other.bottom > item.top && other.top < item.bottom){
+          usedCols.push(other.col);
+        }
+      }
+      var c=0; while(usedCols.indexOf(c)!==-1) c++;
+      item.col=c;
+    });
+
+    // compute totalCols per overlap group
+    layoutItems.forEach(function(item){
+      var maxCol=item.col;
+      layoutItems.forEach(function(other){
+        if(other!==item && other.bottom>item.top && other.top<item.bottom){
+          if(other.col>maxCol) maxCol=other.col;
+        }
+      });
+      item.totalCols=maxCol+1;
+    });
+
+    layoutItems.forEach(function(item){
+      var cls=item.cls;
+      var logged = state.records.some(function(r){return r.classId===cls.id&&r.date===dateKey(date);});
+      var active = isActiveThisWeek(cls, date);
+
+      var gutter=3, gap=2;
+      var colW = (100 - gutter*2 - gap*(item.totalCols-1)) / item.totalCols;
+      var leftPct = gutter + item.col*(colW+gap);
+      var rightPct = 100 - (leftPct + colW);
+
+      var block=document.createElement('div');
+      block.className='class-block '+(cls.type==='fixed'?'type-fixed':'type-temp')+(logged?' logged':'')+(active?'':' biweek-off');
+      block.style.top=item.top+'px';
+      block.style.height=item.bottom-item.top+'px';
+      block.style.left=leftPct+'%';
+      block.style.right=rightPct+'%';
+      var freqLabel = cls.freq==='biweekly' ? ' ·隔週' : '';
+      block.innerHTML=
+        '<div class="cb-name">'+esc(cls.studentName)+'</div>'+
+        '<div class="cb-meta">'+cls.duration+'分'+(logged?' ✓':'')+freqLabel+'</div>';
+      if(active){block.onclick=function(){openLogModal(cls,di,date);};}
+      grid.appendChild(block);
+    });
+
+    var addBtn=document.createElement('button');addBtn.className='add-btn';
+    addBtn.textContent='+';addBtn.title='新增課堂';
+    addBtn.onclick=function(){openAddModal(di);};
+    grid.appendChild(addBtn);
+    col.appendChild(grid);tt.appendChild(col);
+  });
+  // ── current time line on today's column ──
+  var todayColEl=document.querySelector('.day-header.today');
+  if(todayColEl){
+    var nowD=new Date();
+    var nowH=nowD.getHours(),nowM=nowD.getMinutes();
+    // only show if within our displayed range (8~24)
+    if(nowH>=8||(nowH===0&&nowM===0)){
+      var displayH=nowH<8?24:nowH; // midnight = 24
+      var topPx=(displayH-8)*SLOT_H+(nowM/60)*SLOT_H;
+      var dayColEl=todayColEl.parentElement;
+      var gridEl=dayColEl.querySelector('.day-grid');
+      if(gridEl){
+        var line=document.createElement('div');
+        line.className='now-line';
+        line.id='now-line';
+        line.style.top=topPx+'px';
+        gridEl.appendChild(line);
+      }
+    }
+  }
+  // scroll to current time (or 8am) on first render
+  var wrap=document.getElementById('timetable').parentElement;
+  if(wrap._scrolled===undefined){
+    var nowH2=new Date().getHours();
+    var scrollH=nowH2>=8?nowH2:8;
+    var scrollTo=Math.max(0,(scrollH-8)*SLOT_H-80);
+    wrap.scrollTop=scrollTo;
+    wrap._scrolled=true;
+  }
+  // update every minute
+  if(!window._nowTimer){
+    window._nowTimer=setInterval(function(){
+      if(document.getElementById('view-week').classList.contains('visible')) renderWeek();
+    },60000);
+  }
+}
+
+// ── ADD / EDIT MODAL ──────────────────────────────────────────────────────────
+function openAddModal(dayIndex){
+  editingClsId = null;
+  modalDayIndex=dayIndex;
+  formType='fixed';formFreq='weekly';formDuration=50;
+  document.getElementById('modal-add-title').textContent='新增課堂 — '+DAYS[dayIndex];
+  document.getElementById('modal-add-submit').textContent='新增課堂';
+  populateStudentSel('');
+  document.getElementById('f-student-new').value='';
+  document.getElementById('f-student-sel').style.display='';
+  document.getElementById('f-student-new').style.display='';
+  setType('fixed');setFreq('weekly');setDuration(50);
+  buildHourSel(9);
+  document.getElementById('f-min').value='0';
+  openModal('modal-add');
+}
+
+function openEditModal(cls){
+  editingClsId = cls.id;
+  modalDayIndex = cls.dayIndex;
+  formType = cls.type;
+  formFreq = cls.freq||'weekly';
+  formDuration = cls.duration;
+
+  document.getElementById('modal-add-title').textContent='修改課堂資訊';
+  document.getElementById('modal-add-submit').textContent='儲存變更';
+
+  // student — show name but disable changing (would affect records)
+  populateStudentSel(cls.studentName);
+  document.getElementById('f-student-new').value='';
+  document.getElementById('f-student-new').style.display='none'; // editing: no new student
+
+  setType(cls.type);
+  setFreq(cls.freq||'weekly');
+  setDuration(cls.duration);
+  buildHourSel(cls.startHour);
+  document.getElementById('f-min').value=String(cls.startMin);
+
+  closeModal('modal-log');
+  openModal('modal-add');
+}
+
+function populateStudentSel(selected){
+  var sel=document.getElementById('f-student-sel');
+  sel.innerHTML='<option value="">— 選擇學生 —</option>';
+  state.students.forEach(function(s){
+    var o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);
+  });
+  sel.value=selected||'';
+}
+
+function buildHourSel(defaultH){
+  var hourSel=document.getElementById('f-hour');hourSel.innerHTML='';
+  HOURS.forEach(function(h){
+    var o=document.createElement('option');o.value=h;
+    o.textContent=h===24?'00':pad(h);
+    if(h===defaultH)o.selected=true;
+    hourSel.appendChild(o);
+  });
+}
+
+function onStudentSelChange(){if(document.getElementById('f-student-sel').value)document.getElementById('f-student-new').value='';}
+function onStudentInputChange(){if(document.getElementById('f-student-new').value)document.getElementById('f-student-sel').value='';}
+
+function setType(t){
+  formType=t;
+  document.getElementById('rl-fixed').classList.toggle('selected',t==='fixed');
+  document.getElementById('rl-temp').classList.toggle('selected',t==='temporary');
+  document.querySelector('#rl-fixed input').checked=t==='fixed';
+  document.querySelector('#rl-temp input').checked=t==='temporary';
+  document.getElementById('freq-row').style.display=t==='fixed'?'':'none';
+}
+function setFreq(f){
+  formFreq=f;
+  document.getElementById('rl-weekly').classList.toggle('selected',f==='weekly');
+  document.getElementById('rl-biweekly').classList.toggle('selected',f==='biweekly');
+  document.querySelector('#rl-weekly input').checked=f==='weekly';
+  document.querySelector('#rl-biweekly input').checked=f==='biweekly';
+}
+function setDuration(d){
+  formDuration=d;
+  [25,50,60].forEach(function(v){
+    document.getElementById('rl-'+v).classList.toggle('selected',v===d);
+    document.querySelector('#rl-'+v+' input').checked=v===d;
+  });
+}
+
+function submitClass(){
+  var selVal=document.getElementById('f-student-sel').value;
+  var newVal=document.getElementById('f-student-new').value.trim();
+  var name=newVal||selVal;
+  if(!name){alert('請輸入學生姓名');return;}
+
+  if(!state.students.find(function(s){return s.name===name;}))
+    state.students.push({name:name,paymentEnabled:false});
+
+  var days=weekDays();
+  var startHour=Number(document.getElementById('f-hour').value);
+  var startMin=Number(document.getElementById('f-min').value);
+
+  if(editingClsId){
+    // edit existing
+    var cls=state.classes.find(function(c){return c.id===editingClsId;});
+    if(cls){
+      cls.type=formType;cls.freq=formFreq;cls.duration=formDuration;
+      cls.startHour=startHour;cls.startMin=startMin;
+      if(formType==='fixed'){cls.dayIndex=modalDayIndex;cls.date=null;}
+      else{cls.date=dateKey(days[modalDayIndex]);}
+    }
+  } else {
+    // add new
+    var refWeek=isoWeekNum(days[modalDayIndex]);
+    state.classes.push({
+      id:Date.now().toString(),studentName:name,type:formType,freq:formFreq,
+      duration:formDuration,dayIndex:modalDayIndex,startHour:startHour,startMin:startMin,
+      date:formType==='temporary'?dateKey(days[modalDayIndex]):null,
+      refWeek:refWeek,
+    });
+  }
+  save();closeModal('modal-add');renderWeek();
+}
+
+// ── LOG MODAL ─────────────────────────────────────────────────────────────────
+function openLogModal(cls,dayIdx,date){
+  logTarget={
+    clsId:cls.id,studentName:cls.studentName,type:cls.type,
+    freq:cls.freq||'weekly',duration:cls.duration,
+    dayIdx:dayIdx,dKey:dateKey(date),dateLabel:fmtDate(date),
+  };
+  document.getElementById('log-title').textContent=cls.studentName+' 的課堂';
+  var freqStr=cls.type==='fixed'?(cls.freq==='biweekly'?'隔週固定':'每週固定'):'臨時課';
+  document.getElementById('log-info').innerHTML=
+    '<span>'+freqStr+'</span>'+
+    '<span>'+cls.duration+' 分鐘</span>'+
+    '<span>'+DAYS[dayIdx]+' '+fmtDate(date)+'</span>';
+  var logged=state.records.some(function(r){return r.classId===cls.id&&r.date===dateKey(date);});
+  var btn=document.getElementById('log-action-btn');
+  btn.textContent=logged?'✗ 取消計入堂次':'✓ 計入堂次';
+  btn.style.background=logged?'#c0365a':('#'+('0d0f14'.slice(1)),'#2da870');
+  btn.style.background=logged?'var(--rose)':'var(--green)';
+  document.getElementById('del-panel').classList.remove('visible');
+  document.getElementById('log-delete-btn').style.display='';
+  // store cls ref for edit
+  document.getElementById('log-edit-btn')._cls=cls;
+  // note area: only show when logged
+  var existRec=state.records.find(function(r){return r.classId===cls.id&&r.date===dateKey(date);});
+  var noteRow=document.getElementById('note-row');
+  var noteInput=document.getElementById('note-input');
+  if(existRec){
+    noteRow.style.display='';
+    noteInput.value=existRec.note||'';
+  } else {
+    noteRow.style.display='none';
+    noteInput.value='';
+  }
+  openModal('modal-log');
+}
+function doLogAction(){
+  var clsId=logTarget.clsId,key=logTarget.dKey;
+  var idx=state.records.findIndex(function(r){return r.classId===clsId&&r.date===key;});
+  var wasLogged=(idx>=0);
+  if(wasLogged){
+    state.records.splice(idx,1);
+    document.getElementById('note-row').style.display='none';
+    document.getElementById('note-input').value='';
+  } else {
+    state.records.push({id:Date.now().toString(),classId:clsId,date:key,
+      studentName:logTarget.studentName,paid:false,duration:logTarget.duration,note:''});
+    document.getElementById('note-row').style.display='';
+    document.getElementById('note-input').value='';
+  }
+  var nowLogged=!wasLogged;
+  var btn=document.getElementById('log-action-btn');
+  btn.textContent=nowLogged?'✗ 取消計入堂次':'✓ 計入堂次';
+  btn.style.background=nowLogged?'var(--rose)':'var(--green)';
+  save(); renderWeek();
+  if(wasLogged) closeModal('modal-log');
+}
+function doDeleteClass(){
+  var panel=document.getElementById('del-panel');
+  var optsEl=document.getElementById('del-options');
+  var titleEl=document.getElementById('del-panel-title');
+  optsEl.innerHTML='';
+
+  var isFixed=(logTarget.type==='fixed');
+  titleEl.textContent='選擇刪除範圍';
+
+  var opts=[];
+  if(isFixed){
+    opts=[
+      {label:'只刪除這一堂',
+       desc:'僅排除 '+logTarget.dateLabel+'，其他週照常顯示',
+       fn:function(){deleteOnlyThis();}},
+      {label:'這堂及之後的課',
+       desc:'從 '+logTarget.dateLabel+' 起，後續週次全部移除',
+       fn:function(){deleteFromHere();}},
+      {label:'刪除全部（含歷史）',
+       desc:'移除此課程所有週次與出席記錄',
+       fn:function(){deleteAll();}},
+    ];
+  } else {
+    // temp class — just confirm delete
+    opts=[
+      {label:'刪除這堂臨時課',
+       desc:'移除 '+logTarget.dateLabel+' 的臨時課與出席記錄',
+       fn:function(){deleteAll();}},
+    ];
+  }
+
+  opts.forEach(function(o){
+    var btn=document.createElement('button');
+    btn.className='del-opt';
+    btn.innerHTML='<span class="del-opt-label">'+o.label+'</span><span class="del-opt-desc">'+o.desc+'</span>';
+    btn.addEventListener('click',function(e){e.stopPropagation();o.fn();});
+    optsEl.appendChild(btn);
+  });
+
+  document.getElementById('log-delete-btn').style.display='none';
+  panel.classList.add('visible');
+}
+
+// helper: date string YYYY-MM-DD for the currently viewed date of this class
+function deleteOnlyThis(){
+  // Add the date to class.excludeDates array — class stays, just skip this date
+  var clsId=logTarget.clsId;
+  var cls=state.classes.find(function(c){return c.id===clsId;});
+  if(cls){
+    if(!cls.excludeDates) cls.excludeDates=[];
+    if(cls.excludeDates.indexOf(logTarget.dKey)===-1)
+      cls.excludeDates.push(logTarget.dKey);
+  }
+  // also remove any attendance record for this date
+  state.records=state.records.filter(function(r){return !(r.classId===clsId&&r.date===logTarget.dKey);});
+  save();closeModal('modal-log');renderWeek();
+}
+
+function deleteFromHere(){
+  var clsId=logTarget.clsId;
+  var cutDate=logTarget.dKey;
+  // Set cutoffDate on the class — hide from this date onwards
+  var cls=state.classes.find(function(c){return c.id===clsId;});
+  if(cls) cls.cutoffDate=cutDate;
+  // Remove attendance records from cutDate onwards
+  state.records=state.records.filter(function(r){
+    return !(r.classId===clsId && r.date>=cutDate);
+  });
+  save();closeModal('modal-log');renderWeek();
+}
+
+function deleteAll(){
+  var clsId=logTarget.clsId;
+  state.classes=state.classes.filter(function(c){return c.id!==clsId;});
+  state.records=state.records.filter(function(r){return r.classId!==clsId;});
+  save();closeModal('modal-log');renderWeek();
+}
+
+function doDeleteCancel(){
+  document.getElementById('del-panel').classList.remove('visible');
+  document.getElementById('log-delete-btn').style.display='';
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+document.getElementById('modal-add').addEventListener('click',function(e){
+  if(e.target===document.getElementById('modal-add'))closeModal('modal-add');
+});
+document.getElementById('modal-log').addEventListener('click',function(e){
+  if(e.target===document.getElementById('modal-log'))closeModal('modal-log');
+});
+document.getElementById('log-action-btn').addEventListener('click',function(e){e.stopPropagation();doLogAction();});
+document.getElementById('note-save-btn').addEventListener('click',function(e){
+  e.stopPropagation();
+  var clsId=logTarget.clsId,key=logTarget.dKey;
+  var rec=state.records.find(function(r){return r.classId===clsId&&r.date===key;});
+  if(rec){rec.note=document.getElementById('note-input').value.trim();save();}
+  var b=document.getElementById('note-save-btn');
+  b.textContent='✓ 已儲存';
+  setTimeout(function(){b.textContent='儲存';},1500);
+});
+document.getElementById('note-save-btn').addEventListener('click',function(e){
+  e.stopPropagation();
+  var clsId=logTarget.clsId,key=logTarget.dKey;
+  var rec=state.records.find(function(r){return r.classId===clsId&&r.date===key;});
+  if(rec){rec.note=document.getElementById('note-input').value.trim();}
+  save();
+  var btn=document.getElementById('note-save-btn');
+  btn.textContent='✓ 已儲存';
+  setTimeout(function(){btn.textContent='儲存';},1500);
+});
+document.getElementById('log-edit-btn').addEventListener('click',function(e){
+  e.stopPropagation();
+  var cls=e.currentTarget._cls;
+  if(cls) openEditModal(cls);
+});
+document.getElementById('log-delete-btn').addEventListener('click',function(e){e.stopPropagation();doDeleteClass();});
+document.getElementById('confirm-no-btn').addEventListener('click',function(e){e.stopPropagation();doDeleteCancel();});
+document.getElementById('log-close-btn').addEventListener('click',function(e){e.stopPropagation();closeModal('modal-log');});
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats(){
+  var month=document.getElementById('stats-month').value;
+  var sel=document.getElementById('stats-student'),cur=sel.value;
+  sel.innerHTML='<option value="all">全部學生</option>';
+  state.students.forEach(function(s){
+    var o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);
+  });
+  sel.value=(cur&&state.students.find(function(s){return s.name===cur;}))?cur:'all';
+  var fs=sel.value;
+
+  // batch student select
+  var bss=document.getElementById('batch-student-sel');bss.innerHTML='';
+  state.students.forEach(function(s){
+    var o=document.createElement('option');o.value=s.name;o.textContent=s.name;bss.appendChild(o);
+  });
+
+  // student management tags
+  var pt=document.getElementById('pay-toggles');
+  pt.innerHTML=state.students.length?'<span class="pay-toggle-lbl">繳費追蹤：</span>':'<span class="pay-toggle-lbl">尚無學生</span>';
+  state.students.forEach(function(s){
+    var sName=s.name;
+    var wrap=document.createElement('div');
+    wrap.style.cssText='display:inline-block;margin:2px 4px 2px 0;vertical-align:top;';
+    var ptag=document.createElement('div');ptag.className='ptag';
+    var nameBtn=document.createElement('button');nameBtn.className='ptag-name'+(s.paymentEnabled?' on':'');
+    nameBtn.textContent=(s.paymentEnabled?'💳 ':'')+sName;
+    nameBtn.title=s.paymentEnabled?'關閉繳費追蹤':'開啟繳費追蹤';
+    nameBtn.addEventListener('click',function(){
+      var st=state.students.find(function(x){return x.name===sName;});
+      if(st){st.paymentEnabled=!st.paymentEnabled;save();renderStats();}
+    });
+    var delBtn=document.createElement('button');delBtn.className='ptag-del';delBtn.textContent='✕';
+    var panel=document.createElement('div');panel.className='student-del-panel';
+    panel.innerHTML='<p>確定刪除「'+sName+'」及所有課堂記錄？</p>'+
+      '<div class="sdp-btns"><button class="sdp-no">取消</button><button class="sdp-yes">確定刪除</button></div>';
+    delBtn.addEventListener('click',function(){panel.classList.add('visible');delBtn.style.display='none';});
+    panel.querySelector('.sdp-no').addEventListener('click',function(){panel.classList.remove('visible');delBtn.style.display='';});
+    panel.querySelector('.sdp-yes').addEventListener('click',function(){
+      state.students=state.students.filter(function(x){return x.name!==sName;});
+      state.classes=state.classes.filter(function(c){return c.studentName!==sName;});
+      state.records=state.records.filter(function(r){return r.studentName!==sName;});
+      save();renderStats();renderWeek();
+    });
+    ptag.appendChild(nameBtn);ptag.appendChild(delBtn);
+    wrap.appendChild(ptag);wrap.appendChild(panel);pt.appendChild(wrap);
+  });
+
+  // filter records
+  var recs=state.records.filter(function(r){
+    return r.date.startsWith(month)&&(fs==='all'||r.studentName===fs);
+  });
+  var groups={};
+  recs.forEach(function(r){if(!groups[r.studentName])groups[r.studentName]=[];groups[r.studentName].push(r);});
+
+  var container=document.getElementById('stats-cards');container.innerHTML='';
+  if(!Object.keys(groups).length){container.innerHTML='<div class="empty">該月份無上課記錄</div>';return;}
+
+  var mParts=month.split('-');
+
+  Object.entries(groups).forEach(function(entry,gi){
+    var name=entry[0],grecs=entry[1];
+    var student=state.students.find(function(s){return s.name===name;});
+    var sorted=grecs.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+    var paidCount=grecs.filter(function(r){return r.paid;}).length;
+    var rlId='rl-g'+gi;
+
+
+
+    var card=document.createElement('div');card.className='stats-card';
+    var payLine=(student&&student.paymentEnabled)?
+      '<span class="pay-summary">已繳 '+paidCount+' / 未繳 '+(grecs.length-paidCount)+'</span>':'';
+    var attendHTML='';
+    card.innerHTML=
+      '<div class="stats-card-header">'+
+        '<span class="student-badge">'+esc(name)+'</span>'+
+        '<span class="stats-total">共 <strong>'+grecs.length+'</strong> 堂</span>'+payLine+
+      '</div>'+attendHTML+
+      '<div class="record-list" id="'+rlId+'" style="margin-top:10px;"></div>';
+    container.appendChild(card);
+
+    var rl=document.getElementById(rlId);
+    sorted.forEach(function(r,i){
+      var d=new Date(r.date);
+      var row=document.createElement('div');row.className='record-row';row.style.flexWrap='wrap';
+      var paidBtn=(student&&student.paymentEnabled)?
+        '<button class="paid-btn'+(r.paid?' paid':'')+'" onclick="togglePaid(\''+r.id+'\')">'+
+          (r.paid?'✅ 已繳費':'❌ 未繳費')+'</button>':'';
+      row.innerHTML=
+        '<span class="rec-num">第'+(i+1)+'堂</span>'+
+        '<span class="rec-date">'+(d.getMonth()+1)+'/'+d.getDate()+'</span>'+
+        '<span class="rec-dur">'+r.duration+'分鐘</span>'+
+        paidBtn;
+      rl.appendChild(row);
+    });
+  });
+}
+
+function togglePaid(id){
+  var r=state.records.find(function(r){return r.id===id;});
+  if(r){r.paid=!r.paid;save();renderStats();}
+}
+
+function calcExpected(cls,yearStr,monthStr){
+  var year=parseInt(yearStr),month=parseInt(monthStr)-1;
+  var count=0,daysInMonth=new Date(year,month+1,0).getDate();
+  for(var d=1;d<=daysInMonth;d++){
+    var date=new Date(year,month,d);
+    var jsDow=date.getDay(),appDow=jsDow===0?6:jsDow-1;
+    if(appDow!==cls.dayIndex) continue;
+    var dKey=dateKey(date);
+    if(cls.cutoffDate&&dKey>=cls.cutoffDate) continue;
+    if(cls.excludeDates&&cls.excludeDates.indexOf(dKey)!==-1) continue;
+    if(cls.freq==='biweekly'&&(isoWeekNum(date)%2)!==(cls.refWeek%2)) continue;
+    count++;
+  }
+  return count;
+}
+
+// Count expected occurrences of a fixed class from its creation week up to today
+function calcAllExpected(cls){
+  // start from the Monday of cls.refWeek's year — easier: find first occurrence >= class creation
+  // We'll iterate from the class's first possible date to today
+  var today = new Date(); today.setHours(0,0,0,0);
+  var todayKey = dateKey(today);
+
+  // Find the earliest record date for this class as a proxy for start, or use refWeek
+  var classRecords = state.records.filter(function(r){return r.classId===cls.id;});
+  // Walk backwards from today to find start: use refWeek year/week to find first Monday of that week
+  // Simpler: start from Jan 1 of the year the class was created (refWeek stored)
+  // We'll just scan from 2 years ago to cover all cases without knowing exact creation date
+  var scanStart = new Date(today.getFullYear()-3, 0, 1);
+  var count = 0;
+  var d = new Date(scanStart);
+  while(d <= today){
+    var jsDow=d.getDay(), appDow=jsDow===0?6:jsDow-1;
+    if(appDow===cls.dayIndex){
+      var dKey=dateKey(d);
+      if(cls.cutoffDate && dKey>=cls.cutoffDate){break;}
+      if(!(cls.excludeDates && cls.excludeDates.indexOf(dKey)!==-1)){
+        if(cls.freq!=='biweekly' || (isoWeekNum(d)%2)===(cls.refWeek%2)){
+          count++;
+        }
+      }
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return count;
+}
+
+// batch pay: mark first N unpaid records of student as paid
+function batchPay(){
+  var sName=document.getElementById('batch-student-sel').value;
+  var n=parseInt(document.getElementById('batch-count-sel').value);
+  if(!sName){alert('請選擇學生');return;}
+  var unpaid=state.records
+    .filter(function(r){return r.studentName===sName&&!r.paid;})
+    .sort(function(a,b){return a.date.localeCompare(b.date);});
+  var toMark=unpaid.slice(0,n);
+  if(!toMark.length){alert('該學生無未繳費記錄');return;}
+  toMark.forEach(function(r){r.paid=true;});
+  save();renderStats();
+  alert('已將「'+sName+'」最早的 '+toMark.length+' 堂標記為已繳費');
+}
+
+function copyStats(){
+  var month=document.getElementById('stats-month').value;
+  var fs=document.getElementById('stats-student').value;
+  var recs=state.records.filter(function(r){return r.date.startsWith(month)&&(fs==='all'||r.studentName===fs);});
+  var groups={};
+  recs.forEach(function(r){if(!groups[r.studentName])groups[r.studentName]=[];groups[r.studentName].push(r);});
+  var p=month.split('-'),y=p[0],m=parseInt(p[1]);
+  var lines=['📋 '+y+'年'+m+'月 上課記錄',''];
+  var targets=fs==='all'?Object.keys(groups):[fs];
+  targets.forEach(function(name){
+    var rs=(groups[name]||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+    var student=state.students.find(function(s){return s.name===name;});
+    lines.push('【'+name+'】共 '+rs.length+' 堂');
+    rs.forEach(function(r,i){
+      var d=new Date(r.date),ds=(d.getMonth()+1)+'/'+d.getDate();
+      var ps=(student&&student.paymentEnabled)?(r.paid?'✅已繳費':'❌未繳費'):'';
+      lines.push('  第'+(i+1)+'堂｜'+ds+'（'+r.duration+'分鐘）'+(ps?' '+ps:''));
+    });
+    lines.push('');
+  });
+  var text=lines.join('\n');
+  var ta=document.createElement('textarea');ta.value=text;
+  ta.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{
+    document.execCommand('copy');
+    var btn=document.getElementById('copy-btn');
+    btn.textContent='✓ 已複製！';btn.classList.add('copied');
+    setTimeout(function(){btn.textContent='📋 一鍵複製';btn.classList.remove('copied');},2000);
+  }catch(e){alert('請手動複製：\n\n'+text);}
+  document.body.removeChild(ta);
+}
+
+// ── STUDENT PAGE ──────────────────────────────────────────────────────────────
+function initStudentPage(){
+  var sel=document.getElementById('stu-sel');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— 選擇學生 —</option>';
+  state.students.forEach(function(s){
+    var o=document.createElement('option');
+    o.value=s.name;o.textContent=s.name;sel.appendChild(o);
+  });
+  if(cur&&state.students.find(function(s){return s.name===cur;})) sel.value=cur;
+  renderStudentPage();
+}
+
+function renderStudentPage(){
+  var name=document.getElementById('stu-sel').value;
+  var container=document.getElementById('stu-content');
+  container.innerHTML='';
+  if(!name){container.innerHTML='<div class="stu-empty">請選擇學生</div>';return;}
+
+  var student=state.students.find(function(s){return s.name===name;});
+  var allRecs=state.records.filter(function(r){return r.studentName===name;})
+    .sort(function(a,b){return a.date.localeCompare(b.date);});
+
+  if(!allRecs.length){container.innerHTML='<div class="stu-empty">尚無上課記錄</div>';return;}
+
+  // ── overview stats ──
+  var totalLessons=allRecs.length;
+
+
+  var overviewHTML=
+    '<div class="stu-overview">'+
+      '<div class="stu-stat-card"><div class="stu-stat-val">'+totalLessons+'</div><div class="stu-stat-lbl">總堂數</div></div>'+
+    '</div>';
+
+  // ── timeline ──
+  var tlHTML='<div class="stu-attend-title">上課記錄與進度時間軸</div><div class="timeline">';
+  var lastYearMonth='';
+  allRecs.forEach(function(r,i){
+    var d=new Date(r.date);
+    var ym=d.getFullYear()+'-'+pad(d.getMonth()+1);
+    if(ym!==lastYearMonth){
+      var isNewYear=(lastYearMonth===''||d.getFullYear()!==new Date(lastYearMonth+'-01').getFullYear());
+      var monthLabel=d.getFullYear()+'年'+(d.getMonth()+1)+'月';
+      tlHTML+='<div class="tl-month-sep'+(isNewYear?' tl-month-sep-year':'')+'">'+monthLabel+'</div>';
+      lastYearMonth=ym;
+    }
+    var hasNote=r.note&&r.note.trim();
+    var cls=state.classes.find(function(c){return c.id===r.classId;});
+    var clsType=cls?(cls.type==='fixed'?'固定':'臨時'):'';
+    var payedStr='';
+    if(student&&student.paymentEnabled){
+      payedStr='<span class="tl-paid '+(r.paid?'paid':'unpaid')+'">'+(r.paid?'已繳費':'未繳費')+'</span>';
+    }
+    var editId='tl-edit-'+r.id;
+    var noteId='tl-note-'+r.id;
+    var rid=r.id;
+    tlHTML+=
+      '<div class="tl-item">'+
+        '<div class="tl-line-col">'+
+          '<div class="tl-dot'+(hasNote?' has-note':'')+'"></div>'+
+          '<div class="tl-connector"></div>'+
+        '</div>'+
+        '<div class="tl-body">'+
+          '<div class="tl-meta">'+
+            '<span class="tl-num">第'+(i+1)+'堂</span>'+
+            '<span class="tl-date">'+(d.getMonth()+1)+'/'+d.getDate()+'</span>'+
+            '<span class="tl-dur">'+r.duration+'分'+(clsType?' · '+clsType:'')+'</span>'+
+            payedStr+
+          '</div>'+
+          (hasNote
+            ?'<div class="tl-note tl-edit-trigger" id="'+noteId+'" data-rid="'+rid+'">'+esc(r.note)+'<br><span style="font-size:10px;opacity:.6;">點擊編輯</span></div>'
+            :'<span class="tl-note-add tl-edit-trigger" data-rid="'+rid+'">＋ 新增備註</span>'
+          )+
+          '<div class="tl-note-edit" id="'+editId+'">'+
+            '<textarea class="tl-note-textarea" id="tl-ta-'+rid+'" rows="2">'+esc(r.note||'')+'</textarea>'+
+            '<div class="tl-note-btns">'+
+              '<button class="tl-note-save tl-save-trigger" data-rid="'+rid+'">儲存</button>'+
+              '<button class="tl-note-cancel tl-cancel-trigger" data-rid="'+rid+'">取消</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  });
+  tlHTML+='</div>';
+
+  container.innerHTML=overviewHTML+'<div class="stu-attend-card">'+tlHTML+'</div>';
+  // event delegation for timeline note editing
+  container.addEventListener('click',function(e){
+    var t=e.target.closest('.tl-edit-trigger');
+    if(t){tlEditOpen(t.dataset.rid);return;}
+    var s=e.target.closest('.tl-save-trigger');
+    if(s){tlEditSave(s.dataset.rid);return;}
+    var x=e.target.closest('.tl-cancel-trigger');
+    if(x){tlEditClose(x.dataset.rid);return;}
+  });
+}
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────────────────────
+function exportJSON(){
+  var data = JSON.stringify(state, null, 2);
+  var blob = new Blob([data], {type:'application/json'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var now  = new Date();
+  a.href     = url;
+  a.download = '課堂記錄_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(event){
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var imported = JSON.parse(e.target.result);
+      // basic validation
+      if(!imported.students||!imported.classes||!imported.records){
+        alert('檔案格式錯誤，請選擇正確的課堂記錄備份檔案。');
+        return;
+      }
+      // migrate: ensure freq field
+      imported.classes.forEach(function(c){if(!c.freq)c.freq='weekly';});
+      state = imported;
+      save();
+      renderWeek();
+      alert('匯入成功！共 '+state.students.length+' 位學生、'+state.records.length+' 筆記錄。');
+    } catch(err) {
+      alert('匯入失敗：'+err.message);
+    }
+    // reset so same file can be re-imported
+    event.target.value='';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ── TIMELINE NOTE EDIT ───────────────────────────────────────────────────────
+function tlEditOpen(recId){
+  var editEl=document.getElementById('tl-edit-'+recId);
+  if(editEl) editEl.classList.add('visible');
+  var noteEl=document.getElementById('tl-note-'+recId);
+  if(noteEl) noteEl.style.display='none';
+  var addEls=document.querySelectorAll('.tl-edit-trigger[data-rid="'+recId+'"]');
+  addEls.forEach(function(el){el.style.display='none';});
+  var ta=document.getElementById('tl-ta-'+recId);
+  if(ta) ta.focus();
+}
+function tlEditSave(recId){
+  var ta=document.getElementById('tl-ta-'+recId);
+  var val=ta?ta.value.trim():'';
+  var rec=state.records.find(function(r){return r.id===recId;});
+  if(rec){rec.note=val;save();}
+  renderStudentPage();
+}
+function tlEditClose(recId){
+  renderStudentPage();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(function(){
+  var now=new Date();
+  document.getElementById('stats-month').value=now.getFullYear()+'-'+pad(now.getMonth()+1);
+  renderWeek();
+})();
+</script>
+
+<!-- PWA install banner -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-text">
+    加入主畫面
+    <span>像 App 一樣開啟使用</span>
+  </div>
+  <button class="install-btn" id="install-btn">安裝</button>
+  <button class="install-dismiss" id="install-dismiss">✕</button>
+</div>
+
+<script>
+// ── PWA: inline manifest (no separate file needed) ──
+(function(){
+  var i192='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACxUlEQVR42u3asQ2CYBhFUbZzHAdxCWs3cAOGcAcLQ2eCwQUswf8ekrvA4zsJBdO087O8nqu6TYXHi1YKh5enJAgvSUkIXoqSELwEZSEYXlkEBlcSgZGVhWBYZREYVFkEhlQagRGVBWBAZREYTlkEBlMagbGUBWAopREYSVkABlIagXGUBWAYpREYRQBIAEgxAAZRGoExBIAEgASABIAEgDQ6AEMojcAIAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkAC4MhdzqefPebbt/W9DBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwOY79fDBwAAAAAAgE8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwNygAAAAAAAA+gQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDPcH6GAwAAAADwCeQTCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/g/obFAAAAADAJ5BPIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkPYBsD2GUPb4ARAAxhAAEgASABIAUgUABEofPwACwCgCQIoCgEDp4wdAeQAQKH38ACgPAAKljx8A5QFAoPTxQ6D88UOg/PEDoDwACJQ+fgiUP34IlD9+EJQ/fAjk+CGQ4wdBDh8EOXwQ5PCBkIOHQ/935B8wktIzIdYbfAAAAABJRU5ErkJggg==';
+  var i512='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAALYElEQVR42u3bsU0DQRRFUXdHORRCExvTwXYwRdADAXKGZOQcrQjWYjz3jHQa+At6N/Hl4p3+rl+fNwDOY1k8Yw6AaPCMPQCiwDP4AAgCz+gDIAaMPgCIAaMPAGLA8AOAEDD6ACAGDD8ACAHDDwBCwPgDIAI8ww+AEPAMPwBCwDP+AIgAz/ADIAQ84w+ACDD8ACAEjD8AiADjDwAiwPgDgAgw/gAgAgw/AAgB4w8AIsD4A4AIMP4AIAKMPwCIAOMPACLA+AOACBAAAFANAB8MAGIR4EMBQCwCfCAAiEWADwMAsQjwQQAgGAE+BgDEAsCHAIBYBPgAABCMAMcHgFgAODwAxCLAwQEgGAGODQCxAHBoAAhGgCMDQCwAHBgAYhHgsAAQjABHBYBYADgoAAQjwDEBIBYADgkAwQhwRAAQAADA6gHggAAQjADHA4BYADgcAAQjwNEAQAAAAKsHgIMBQDACHAsABAAAsHoAOBQABCPAkQBAAAAAqweAAwFAMAIcBwAEAAAgAACA5QLAYQAgGAGOAgACAAAQAACAAAAAnj8AHAQAghHgGAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAA4LwAcAgACEaAIwCAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAABAAAIAAAAAEAAAgA+Bdvry8P9zHef3X7vsKf+F9FAIAAQACAAAABgAAAAQACAAEAAgAEAAIABAAIAAQACAAQAAgAEAAIAAGAAAABgAAQAAgAEAAIAAGAAAABgAAQAAgAEAAIAAGAAAABgAAQAAgABAAIAAGAAEAAgAAQAAgABAAIABAACAAQACAAEAAgAEAAIABAACAAQACAAEAAgAAAAYAAAAEAAgABAAIABAACAAQACAAEAAgABIAAQACAAEAACAAEAAgABIAAQACAAEAACAAEAAgABIAAQACAAEAACAAEAAIABIAAQAAgAEAACAAEAAIABAAIAAQACAAQAAgAEAAgABAAIAAQACAAQAAgAEAAgABAAIAAAAGAAAABAAIAAQACAAQAAgAEAAJAACAAQAAgAAQAAgAEAAJAACAAQAAgAAQAAgAEAAJAACAAQAAgAAQAAgABAAJAACAAEAAgAAQAAgABAALAsCEAEAAgAEAAIABAAIAAQACAAEAAgAAAAYAAAAEAAgABAAIABAACAAQACAAEAAgAePoAGPvG5AQAAgAEgAAQAAIAAQACQAAIAAGAAAABIAAEgABAAIAAEAACQAAgAEAACAABIAAQACAA8DNAEAAgABAAIABAACAAQACAAEAAgAAAAYAAAAEAAgABAAIAASAAEAAgABAAAgABAAIAASAAEAAgABAAAgABAAIAASAAEAAgABAAAgABgAAAASAAEAAIABAAAgABgAAAAWDYEAAIABAAIAAQACAAQAAgAEAAIABAAIAAQACAAAABgAAAAQACAAEAAgAEAAIABAAIAAQACAAEgABAAIAAQAAIAAQACAAEgABAAIAAQAAIAAQACAAEgABAAIAAQAAIAAQAAsAhEAACAAGAAAABIAAQAAgAEACGDQGAAAABAAIAAQAC4MDYNyYnABAAIAAEgAAQAAgAEAACQAAIAAQACAABIAAEAAIABIAAEAACAAEAAkAACAABgAAAAYCfAYIAAAGAAAABAAIAAQACAAQAAgAEAAgABAAIABAACAAQAAgAAYAAAAGAABAACAAQAAgAAYAAAAGAABAACAAQAAgAAYAAAAGAABAACAAEAAgAAYAAQACAABAACAAEAAgAw4YAQACAAAABgAAAAQACAAEAAgABAAIABAACAAQACAAEAAgAEAAIABAAIAAQACAAQAAgAEAAIAAEAAIABAACQAAgAEAAIAAEAAIABAACQAAgAEAAIAAEAAIABAACQAAgABAADoEAEAAIAAQACAABgABAAIAAMGwIAAQACAAQAAgAEAAHxr4xOQGAAAABIAAEgABAAIAAEAACQAAgAEAACAABIAAQACAABIAAEAAIABAAAkAACAAEAAgA/AwQBAAIAAQACAAQAAgAEAAgABAAIABAACAAQACAAEAAgABAAAgABAAIAASAAEAAgABAAAgABAAIAASAAEAAgABAAAgABAAIAASAAEAAIABAAAgABAACAASAAEAAIABAABg2BAACAAQACAAEAAgAEAAIABAACAAQACAAEAAgAEAAIABAAIAAQACAAAABgAAAAQACAAEAAgABIAAQACAAEAACAAEAAgABIAAQACAAEAACAAEAAgABIAAQACAAEAACAAGAAHAIBIAAQAAgAEAACAAEAAIABIBhQwAgAEAAgABAAIAAODD2jckJAAQACAABIAAEAAIABIAAEAACAAEAAkAACAABgAAAASAABIAAQACAABAAAkAAIABAAOBngCAAQAAgAEAAgABAAIAAAAGAAAABAAIAAQACAAQAAgAEAAJAACAAQAAgAAQAAgAEAAJAACAAQAAgAAQAAgAEAAJAACAAQAAgAAQAAgABAAJAACAAEAAgAAQAAgABAALAsCEAEAAgAEAAIABAAIAAQACAAEAAgAAAAYAAAAEAAgABAAIABAACAAQACAAEAAgAEAAIABAACAABgAAAAYAAEAAIABAACAABgAAAAYAAEAAIABAACAABgAAAAYAAEAAIAASAQyAABAACAAEAAkAAIAAQACAADBsCAAEAAgAEAAIABAAIAAQACAAEAAgAEAAIABAAIAAQACAAQAAgAEAAgABAAIAAAAGAAAABAAIAAQACAAEgABAAIAAQAAIAAQACAAEgABAAIAAQAAIAAQACAAEgABAACABHQAAIAAQAAgAEgABAACAAQAAIAAQAAgAEAAgABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAACYIQDuzyEAIDb+AgAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAJwfACIAAILjLwAAQAAAAAIAABAAAMA6ASACACA4/gIAAAQAACAAAIBlA0AEAEBw/AUAAAgAAKASACIAAILjLwAAQAAAAJUAEAEAEBx/AQAAAgAAqASACACA4PgLAACIBoAIAIDg+AsAABAAAEAlAEQAAATHXwAAQDQARAAABMdfAABANABEAAAEx18EAEB0/AUAAEQDQAQAQHD8BQAARANABABAcPxFAABEx18AAEA0AEQAAATHXwQAQHT8BQAARANABABAcPxFAABEx18EAEB0/EUAAETHXwQAQHT8BQAARANABABAcPxFAABEx18EAEB0/EUAAETHXwQAQHT8RQAARMdfCABAdPhFAACEx18EAGD8488fAgDGXwQAgPEXAgBg+EUAABh/IQAAhl8EAIDxFwIAYPiFAAAYfhEAAMZfCACA4RcCAGD4xQAARt8TAgAYfk8MAGD0PTEAgNH3xAAARt8TBAAYfE8UAGDsPdEAgDF//PsBoQeaJ7p/XFYAAAAASUVORK5CYII=';
+  var manifest={
+    name:'課堂記錄',short_name:'課堂記錄',
+    description:'學生上課堂次管理系統',
+    start_url:'.',display:'standalone',
+    background_color:'#f5f3ef',theme_color:'#eceae4',
+    orientation:'portrait-primary',
+    icons:[
+      {src:i192,sizes:'192x192',type:'image/png',purpose:'any'},
+      {src:i192,sizes:'192x192',type:'image/png',purpose:'maskable'},
+      {src:i512,sizes:'512x512',type:'image/png',purpose:'any'},
+      {src:i512,sizes:'512x512',type:'image/png',purpose:'maskable'}
+    ]
+  };
+  var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('manifest-link').href=URL.createObjectURL(blob);
+})();
+
+// ── PWA: inline service worker via blob ──
+(function(){
+  var swCode = [
+    '"use strict";',
+    'var CACHE="classtracker-v1";',
+    'self.addEventListener("install",function(e){',
+    '  e.waitUntil(caches.open(CACHE).then(function(cache){',
+    '    return cache.addAll(["."]);',
+    '  }));',
+    '  self.skipWaiting();',
+    '});',
+    'self.addEventListener("activate",function(e){',
+    '  e.waitUntil(clients.claim());',
+    '});',
+    'self.addEventListener("fetch",function(e){',
+    '  e.respondWith(',
+    '    caches.match(e.request).then(function(r){',
+    '      return r || fetch(e.request);',
+    '    })',
+    '  );',
+    '});'
+  ].join('\n');
+  var blob = new Blob([swCode], {type:'application/javascript'});
+  var swUrl = URL.createObjectURL(blob);
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register(swUrl).catch(function(){});
+  }
+})();
+
+// ── PWA: install prompt ──
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredPrompt = e;
+  var banner = document.getElementById('install-banner');
+  if(banner && !localStorage.getItem('pwa-dismissed')){
+    banner.classList.add('show');
+  }
+});
+
+document.getElementById('install-btn').addEventListener('click', function(){
+  var banner = document.getElementById('install-banner');
+  banner.classList.remove('show');
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){
+      deferredPrompt = null;
+    });
+  }
+});
+
+document.getElementById('install-dismiss').addEventListener('click', function(){
+  document.getElementById('install-banner').classList.remove('show');
+  localStorage.setItem('pwa-dismissed','1');
+});
+
+window.addEventListener('appinstalled', function(){
+  document.getElementById('install-banner').classList.remove('show');
+  deferredPrompt = null;
+});
+</script>
+</body>
+</html>
